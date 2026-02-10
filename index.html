@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Always you</title>
+
+<!-- Aesthetic + Readable Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--accent:#FFC0CB;
+--bg1:#ffeaf2;
+--bg2:#f3e8ff;
+}
+
+*{
+box-sizing:border-box;
+font-family:'Inter',system-ui,sans-serif;
+}
+
+body{
+margin:0;
+min-height:100vh;
+background:linear-gradient(135deg,var(--bg1),var(--bg2));
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+-webkit-tap-highlight-color:transparent;
+}
+
+/* FLOATING HEARTS */
+.hearts{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:0;
+}
+.heart{
+position:absolute;
+font-size:18px;
+animation:floatUp 12s linear infinite;
+opacity:.6;
+}
+@keyframes floatUp{
+from{transform:translateY(100vh) scale(.8)}
+to{transform:translateY(-10vh) scale(1.3)}
+}
+
+/* SPARKLES */
+.sparkle{
+position:fixed;
+font-size:20px;
+animation:spark 1.2s ease forwards;
+pointer-events:none;
+z-index:20;
+}
+@keyframes spark{
+0%{transform:scale(0);opacity:0}
+50%{opacity:1}
+100%{transform:translateY(-80px) scale(1.4);opacity:0}
+}
+
+/* MAIN */
+.container{
+width:100%;
+max-width:390px;
+padding:16px;
+text-align:center;
+z-index:1;
+}
+
+.card{
+background:rgba(255,255,255,.96);
+border-radius:28px;
+padding:24px;
+box-shadow:0 20px 40px rgba(255,143,177,.25);
+animation:fadeIn .9s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(20px)}
+to{opacity:1;transform:none}
+}
+
+h2,h3{
+font-family:'Playfair Display',serif;
+font-weight:600;
+font-size:30px;
+margin:10px 0;
+}
+
+/* INPUT + BUTTON */
+input,button{
+width:100%;
+padding:16px;
+border-radius:999px;
+border:none;
+font-size:16px;
+transition:.4s;
+}
+
+input{
+border:2px solid var(--accent);
+margin-bottom:12px;
+}
+
+button{
+background:var(--accent);
+color:white;
+font-weight:500;
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 10px 25px rgba(255,143,177,.5);
+}
+
+/* PUZZLE */
+.board,.tray{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px;
+margin-top:14px;
+}
+
+.slot{
+aspect-ratio:1;
+border:2px dashed var(--accent);
+border-radius:16px;
+}
+
+.piece{
+aspect-ratio:1;
+background-size:400% 400%;
+border-radius:16px;
+cursor:pointer;
+transition:.4s;
+}
+
+.selected{
+transform:scale(1.08);
+box-shadow:0 12px 30px rgba(255,143,177,.6);
+}
+
+/* MODALS */
+.modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+display:flex;
+align-items:center;
+justify-content:center;
+animation:fadeIn .6s ease;
+z-index:10;
+}
+
+/* FULL PHOTO */
+.full-photo{
+width:260px;
+max-width:80vw;
+border-radius:22px;
+animation:photoReveal 1.2s ease;
+}
+@keyframes photoReveal{
+0%{transform:scale(.6) rotate(-5deg);opacity:0}
+100%{transform:scale(1);opacity:1}
+}
+
+/* LETTER */
+.letter{
+font-size:15.5px;
+line-height:1.9;
+white-space:pre-line;
+max-height:60vh;
+overflow-y:auto;
+padding-right:6px;
+text-align:left;
+-webkit-overflow-scrolling:touch;
+}
+
+/* MOBILE POLISH */
+@media(max-width:420px){
+h2,h3{font-size:26px}
+.card{padding:20px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="hearts" id="hearts"></div>
+
+<div class="container">
+
+<div class="card" id="passwordScreen">
+<h2>Hi Pretty!</h2>
+<input id="passwordInput" type="password" placeholder="Secret password">
+<button id="unlockBtn">Unlock 🌷</button>
+<p id="error" style="color:#FFC0CB"></p>
+</div>
+
+<div class="card" id="musicScreen" style="display:none">
+<h2>Our Song 🎶</h2>
+<button id="musicBtn">Play Music 🌷</button>
+<button id="toPuzzle" style="margin-top:12px">Continue 🌷</button>
+</div>
+
+<div class="card" id="puzzleScreen" style="display:none">
+<h3>Put Us Together 🧩</h3>
+<p id="progress">0 / 16 pieces 💕</p>
+<div class="board" id="board"></div>
+<div class="tray" id="tray"></div>
+</div>
+
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="modal" id="photoModal" style="display:none">
+<div class="card">
+<img src="photo.jpg" class="full-photo">
+</div>
+</div>
+
+<!-- CONGRATS -->
+<div class="modal" id="completeModal" style="display:none">
+<div class="card">
+<h2>From my heart</h2>
+<button id="claimReward">tap here for a surprise 🌷</button>
+</div>
+</div>
+
+<!-- LETTER -->
+<div class="modal" id="letterModal" style="display:none">
+<div class="card">
+<div class="letter" id="letterText"></div>
+<button id="restart" style="margin-top:16px; display:none">
+Back 🌷
+</button>
+</div>
+</div>
+
+<audio id="music" src="song.mp3" loop></audio>
+
+<script>
+const PASSWORD="12182025"
+const TOTAL=16;
+let placed=0, selected=null;
+
+const letter=`Hi mahal, ezeee haba pasensya sa puzzle ah HAHAHHA
+
+Maligayang araw ng mga puso mahal ko, more valentines, more months and years to come💗🤞 i love you.
+Celebrate muna tayo ng magkalayo HAHAHA sorry di pa nakakauwi, soon and manifesting na sa ano mang event sa ating buhay ay magkasama na tayo.
+
+Thankyou kay Lord binigay ka muli sakin, super duper blessed at super swerte ko na meron akong ikaw, ang nagiisang Mai-Mai ng gloria ay girlfriend ko thankyou po☝️✨.
+And ayon lagi mong tatandaan na proud na proud na proud ako sayo.
+
+Always kang pipiliin mahal sa anomang sitwasyon at handa akong intindihin ka, intindihin ang tayo sa ano mang sitwasyon.
+And lastly (may pa lastlyHAHHA) thankyou sa malawak na pasensya, thankyou sa palaging pagintindi, thankyou sa patuloy na pagpili, thankyou sa love at maraming maraming thankyou sa lahat lahat.
+You know the rest na , you're girlfriend always here.
+
+I love you so muchhhhh
+i miss you so much,
+Magiingat palagi💗
+
+Travel?hmmHAHAHAHHA
+bawi ako pag uwi mahal mwuahhh
+
+Forever yours,
+Jo💗`;
+
+unlockBtn.onclick=()=>{
+if(passwordInput.value===PASSWORD){
+passwordScreen.style.display="none"
+musicScreen.style.display="block"
+} else {
+error.textContent="Wrong password 💔"
+}
+};
+
+musicBtn.onclick=()=>{
+music.volume=0;
+music.play();
+let v=0;
+const fade=setInterval(()=>{
+v+=0.05;
+music.volume=Math.min(v,1);
+if(v>=1) clearInterval(fade);
+},150);
+};
+
+toPuzzle.onclick=()=>{
+musicScreen.style.display="none"
+puzzleScreen.style.display="block"
+initPuzzle();
+};
+
+function initPuzzle(){
+board.innerHTML=""
+tray.innerHTML=""
+placed=0;
+selected=null;
+progress.textContent="0 / 16 pieces 💕"
+
+for(let i=0;i<TOTAL;i++){
+const s=document.createElement("div");
+s.className="slot"
+s.dataset.index=i;
+s.onclick=()=>place(s);
+board.appendChild(s);
+}
+
+[...Array(TOTAL).keys()].sort(()=>Math.random()-0.5).forEach(i=>{
+const p=document.createElement("div");
+p.className="piece"
+p.dataset.index=i;
+p.style.backgroundImage="url('photo.jpg')"
+p.style.backgroundPosition=`${(i%4)*100/3}% ${Math.floor(i/4)*100/3}%`;
+p.onclick=()=>{
+document.querySelectorAll(".piece").forEach(x=>x.classList.remove("selected"));
+selected=p;
+p.classList.add("selected");
+};
+tray.appendChild(p);
+});
+}
+
+function place(slot){
+if(!selected) return;
+if(slot.dataset.index===selected.dataset.index && !slot.firstChild){
+slot.appendChild(selected);
+selected.classList.remove("selected");
+selected=null;
+placed++;
+progress.textContent=`${placed} / 16 pieces 💕`;
+
+if(placed===TOTAL){
+setTimeout(()=>{
+photoModal.style.display="flex"
+sparkles();
+setTimeout(()=>{
+photoModal.style.display="none"
+completeModal.style.display="flex"
+},2200);
+},600);
+}
+}
+}
+
+claimReward.onclick=()=>{
+completeModal.style.display="none"
+letterModal.style.display="flex"
+typeLetter();
+};
+
+restart.onclick=()=>{
+letterModal.style.display="none"
+completeModal.style.display="none"
+photoModal.style.display="none"
+puzzleScreen.style.display="none"
+musicScreen.style.display="none"
+
+passwordScreen.style.display="block"
+passwordInput.value=""
+error.textContent=""
+
+board.innerHTML=""
+tray.innerHTML=""
+placed=0;
+selected=null;
+progress.textContent="0 / 16 pieces 💕"
+
+music.pause();
+music.currentTime=0;
+};
+
+/* TYPEWRITER */
+function typeLetter(){
+letterText.textContent=""
+restart.style.display="none"
+let i=0;
+
+const t=setInterval(()=>{
+letterText.textContent+=letter[i];
+letterText.scrollTop=letterText.scrollHeight;
+i++;
+
+if(i>=letter.length){
+clearInterval(t);
+restart.style.display="block"
+}
+},30);
+}
+
+/* SPARKLES */
+function sparkles(){
+for(let i=0;i<30;i++){
+const s=document.createElement("div");
+s.className="sparkle"
+s.textContent="✨"
+s.style.left=Math.random()*100+"vw"
+s.style.top="60vh"
+document.body.appendChild(s);
+setTimeout(()=>s.remove(),1200);
+}
+}
+
+/* FLOATING HEARTS */
+setInterval(()=>{
+const h=document.createElement("div");
+h.className="heart"
+h.textContent="🌷"
+h.style.left=Math.random()*100+"vw"
+hearts.appendChild(h);
+setTimeout(()=>h.remove(),14000);
+},900);
+</script>
+</body>
+</html>
